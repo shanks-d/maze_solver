@@ -6,10 +6,97 @@ float kp = 13;
 float kd = 1.2;
 float pid;
 float p = 0,d = 0;
-int flag_6 = 0, flag_7 = 0, left = 0, right = 0, check = 0;
+int flag_6 = 0, flag_7 = 0, left = 0, right = 0, check = 0, dir_count = 0;
 int Left = 0, Right = 0, Forward = 0, LT = 0, Plus = 0, End = 0;
 long int len_count = 0;
+char dir[4]={'N','E','S','W'}, Dir = 'N';
 int LSR = 0, RSL = 1, SRL = 0;
+
+void update_dir()
+{	
+	if(dir_count==-1)
+	{
+		dir_count=3;
+	}
+	else if(dir_count==4)
+	{
+		dir_count=0;
+	}
+	else if(dir_count==5)
+	{
+		dir_count=1;
+	}
+	else if(dir_count==-2)
+	{
+		dir_count=2;
+	}
+	Dir=dir[dir_count];
+}
+
+void update_map()
+{
+	lcd_clear();
+	if(len_count>1000&&len_count<3200)
+	{
+		if(Dir=='N')
+		{
+			lcd_write_string_xy(7,0,"N");
+		}
+		else if(Dir=='E')
+		{
+			lcd_write_string_xy(7,0,"E");
+		}
+		else if(Dir=='S')
+		{
+			lcd_write_string_xy(7,0,"S");
+		}
+		else if(Dir=='W')
+		{
+			lcd_write_string_xy(7,0,"W");
+		}
+		lcd_write_string_xy(15,1,"3");
+	}
+	else if(len_count>3700&&len_count<5200)
+	{
+		if(Dir=='N')
+		{
+			lcd_write_string_xy(7,0,"N");
+		}
+		else if(Dir=='E')
+		{
+			lcd_write_string_xy(7,0,"E");
+		}
+		else if(Dir=='S')
+		{
+			lcd_write_string_xy(7,0,"S");
+		}
+		else if(Dir=='W')
+		{
+			lcd_write_string_xy(7,0,"W");
+		}
+		lcd_write_string_xy(15,1,"6");
+	}
+	else if(len_count>5700&&len_count<7200)
+	{
+		if(Dir=='N')
+		{
+			lcd_write_string_xy(7,0,"N");
+		}
+		else if(Dir=='E')
+		{
+			lcd_write_string_xy(7,0,"E");
+		}
+		else if(Dir=='S')
+		{
+			lcd_write_string_xy(7,0,"S");
+		}
+		else if(Dir=='W')
+		{
+			lcd_write_string_xy(7,0,"W");
+		}
+		lcd_write_string_xy(15,1,"9");
+	}
+}
 
 void line_track(void)
 {
@@ -96,13 +183,7 @@ void check_turns()
 	check=1;
 	if(bit_is_clear(PIND,6)||bit_is_clear(PIND,7))
 	{
-		if(len_count>1000&&len_count<3200)
-		{lcd_clear();lcd_write_string_xy(15,1,"3");}
-		else if(len_count>3700&&len_count<5200)
-		{lcd_clear();lcd_write_string_xy(15,1,"6");}
-		else if(len_count>5700&&len_count<7200)
-		{lcd_clear();lcd_write_string_xy(15,1,"9");}
-		
+		update_map();
 		if(bit_is_clear(PINA,5)||bit_is_clear(PINA,6))
 		{
 			if(bit_is_clear(PIND,6)&&bit_is_set(PIND,7))
@@ -300,8 +381,8 @@ void left_L()
 	set_pwm1a(400);
 	set_pwm1b(400);
 	_delay_ms(150);
-	left=0;check=0;opt=270;flag_6=0;flag_7=0,Left=0,Forward=0,Right=0;LT=0;Plus=0;len_count=0;
-	lcd_clear();
+	left=0;check=0;opt=270;flag_6=0;flag_7=0,Left=0,Forward=0,Right=0;LT=0;Plus=0;len_count=0;dir_count--;
+	update_dir();lcd_clear();
 }
 
 void right_L()
@@ -336,20 +417,13 @@ void right_L()
 	set_pwm1a(400);
 	set_pwm1b(400);
 	_delay_ms(150);
-	right=0;check=0;opt=270;flag_6=0;flag_7=0,Left=0,Forward=0,Right=0;LT=0;Plus=0;len_count=0;
-	lcd_clear();
+	right=0;check=0;opt=270;flag_6=0;flag_7=0,Left=0,Forward=0,Right=0;LT=0;Plus=0;len_count=0;dir_count++;
+	update_dir();lcd_clear();
 }
 
 void U_turn()
 {
-	if(len_count>1000&&len_count<3200)
-	{lcd_clear();lcd_write_string_xy(15,1,"3");}
-	else if(len_count>3700&&len_count<5200)
-	{lcd_clear();lcd_write_string_xy(15,1,"6");}
-	else if(len_count>5700&&len_count<7200)
-	{lcd_clear();lcd_write_string_xy(15,1,"9");}
-	bot_backward();
-	set_pwm1a(400);set_pwm1b(400);
+	update_map();
 	while(bit_is_set(PIND,6))//setA4
 	{
 		bot_spot_left();
@@ -372,8 +446,8 @@ void U_turn()
 	bot_spot_right();
 	set_pwm1a(400);
 	set_pwm1b(400);
-	len_count=0;
-	lcd_clear();
+	len_count=0;dir_count-=2;
+	update_dir();lcd_clear();
 }
 
 void init_devices(void)
