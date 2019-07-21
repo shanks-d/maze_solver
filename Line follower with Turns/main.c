@@ -4,8 +4,8 @@ int mpos=0,prempos=0;
 int motor1_value = 0;//left motor is m1
 int motor2_value = 0;
 unsigned int opt = 310;//310
-float kp = 5;//8
-float kd = 1.0;//4.0
+float kp = 8;//8
+float kd = 4.0;//4.0
 float pid;
 float p = 0,d = 0;
 int flag_6 = 0, flag_7 = 0, left = 0, right = 0, check = 0, dir_count = 0, start = 0, dir_pass = 0;
@@ -56,36 +56,37 @@ void start_map()
 
 void write_map()
 {
-	uint16_t eeprom_addr=0x0000;
-	eeprom_write_word(eeprom_addr,x_end);
-	eeprom_addr+=2;
-	eeprom_write_word(eeprom_addr,y_end);
-	eeprom_addr+=2;
-	for(int I=0;I<27;I++)
+	if(map[x_end][y_end][0]=='a')
 	{
-		for(int J=0;J<27;J++)
+		int x=x_map, y=y_map;
+		plan_path();
+		x_map=x;y_map=y;
+		uint16_t eeprom_addr=0x0000;
+		eeprom_write_word(eeprom_addr,k);
+		eeprom_addr+=2;
+		for(int a=k;a>=0;a--)
 		{
-			eeprom_write_byte(eeprom_addr,map[I][J][0]);
-			eeprom_addr+=0x0001;
+			eeprom_write_word(eeprom_addr,track[a]);
+			eeprom_addr+=2;
 		}
-	}
-	lcd_clear();lcd_write_string_xy(4,0,"MAP DONE");
-
-	/*unsigned char eeprom_addr2=0x0000;
-	eeprom_write_word(eeprom_addr2,k);
-	eeprom_addr2++;
-	for(int a=k;a>=0;a--)
-	{
-		eeprom_addr2++;
-		eeprom_write_word(eeprom_addr2,track[a]);
-		eeprom_addr2++;
-	}
-	lcd_write_string_xy(3,1,"TRACK DONE");*/
-	if(flag_END==2)
-	{	
-		while(1)
+		
+		lcd_write_string_xy(3,1,"TRACK DONE");
+		for(int I=0;I<27;I++)
 		{
-			bot_stop();
+			for(int J=0;J<27;J++)
+			{
+				if(map[I][J][0]!='\0'&&map[I][J][0]!='(')
+				{
+					map[I][J][0]='a';
+				}
+			}
+		}
+		if(flag_END==2)
+		{	
+			while(1)
+			{
+				bot_stop();
+			}
 		}
 	}
 }
@@ -93,19 +94,15 @@ void write_map()
 void read_map()
 {
 	uint16_t eeprom_addr=0x0000;
-	x_end=eeprom_read_word(eeprom_addr);
+	k=eeprom_read_word(eeprom_addr);
 	eeprom_addr+=2;
-	y_end=eeprom_read_word(eeprom_addr);
-	eeprom_addr+=2;
-	for(int I=0;I<27;I++)
+	for(int b=k;b>=0;b--)
 	{
-		for(int J=0;J<27;J++)
-		{
-			map[I][J][0]=eeprom_read_byte(eeprom_addr);
-			eeprom_addr+=0x0001;
-		}
+		track[b]=eeprom_read_word(eeprom_addr);
+		eeprom_addr+=2;
+		lcd_write_string_xy(b,1,"_");
 	}
-	lcd_clear();lcd_write_string_xy(4,0,"MAP READ");
+	lcd_write_string_xy(12,0,"END");
 }
 
 void plan_path()
@@ -223,8 +220,7 @@ void plan_path()
 			track[k]=2;num--;y_map+=2;k++;
 		}
 	}
-	k-=2;Dir = 'N';lcd_clear();lcd_write_string_xy(2,1,"PATH");lcd_write_string_xy(7,1,"PLANNED");
-	//write_track();
+	k-=2;lcd_clear();lcd_write_string_xy(2,1,"PATH");lcd_write_string_xy(7,1,"PLANNED");//Dir = 'N';
 }
 
 void pass_turns()
@@ -243,7 +239,7 @@ void pass_turns()
 		case 1:
 		switch(Dir)
 		{
-			case 'S':flag_line=0;correct_turn();len_count=0;break;
+			case 'S':flag_line=0;correct_turn();correct_for();len_count=0;break;
 			case 'W':left=1;break;
 			case 'E':right=1;break;
 			default:break;
@@ -252,7 +248,7 @@ void pass_turns()
 		case 2:
 		switch(Dir)
 		{
-			case 'W':flag_line=0;correct_turn();len_count=0;break;
+			case 'W':flag_line=0;correct_turn();correct_for();len_count=0;break;
 			case 'N':left=1;break;
 			case 'S':right=1;break;
 			default:break;
@@ -261,7 +257,7 @@ void pass_turns()
 		case 3:
 		switch(Dir)
 		{
-			case 'N':flag_line=0;correct_turn();len_count=0;break;
+			case 'N':flag_line=0;correct_turn();correct_for();len_count=0;break;
 			case 'E':left=1;break;
 			case 'W':right=1;break;
 			default:break;
@@ -270,7 +266,7 @@ void pass_turns()
 		case 4:
 		switch(Dir)
 		{
-			case 'E':flag_line=0;correct_turn();len_count=0;break;
+			case 'E':flag_line=0;correct_turn();correct_for();len_count=0;break;
 			case 'S':left=1;break;
 			case 'N':right=1;break;
 			default:break;
@@ -785,15 +781,15 @@ void line_track(void)
 		opt=310;
 		if(bit_is_clear(PINA,5)&&bit_is_set(PINA,6))
 		{
-			opt=310;kp=5;kd=1.0;
+			opt=310;kp=8;kd=4.0;
 		}
 		else if((bit_is_clear(PINA,5)&&bit_is_clear(PINA,6))||(bit_is_set(PINA,5)&&bit_is_clear(PINA,6)))
 		{
-			opt=290;kp=4;kd=1.0;
+			opt=285;kp=5;kd=5.0;
 		}
 		else if(bit_is_set(PINA,5)&&bit_is_clear(PINA,6))
 		{
-			opt=280;kp=5;kd=1.5;
+			opt=280;kp=5;kd=5.0;
 		}
 	}
 	check_sensors();
@@ -818,7 +814,7 @@ void line_track(void)
 		
 		case 0b0001:mpos = -6; break;
 		
-		case 0b0000:if(bit_is_set(PIND,6)&&bit_is_set(PINA,4)&&bit_is_set(PINA,5)&&bit_is_set(PINA,6)&&bit_is_set(PINA,7)&&bit_is_set(PIND,7)&&flag_END!=2&&len_count>1000){lcd_clear();lcd_write_string_xy(2,0,"WRITING MAP");bot_backward();bot_brake();write_map();D_U_turn();}break;
+		case 0b0000:if(bit_is_set(PIND,6)&&bit_is_set(PINA,4)&&bit_is_set(PINA,5)&&bit_is_set(PINA,6)&&bit_is_set(PINA,7)&&bit_is_set(PIND,7)&&flag_END!=2&&len_count>1000){lcd_clear();lcd_write_string_xy(2,0,"WRITING MAP");bot_backward();bot_brake();update_map();write_map();D_U_turn();}break;
 		
 		default:mpos=0; break;
 	}
@@ -1342,7 +1338,7 @@ void random_turns()
 				}
 				else if(len_count%2==1)
 				{
-					flag_line=0;correct_turn();len_count=0;lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);//lcd_clear();
+					flag_line=0;correct_turn();correct_for();len_count=0;lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);//lcd_clear();
 				}
 			}
 			else if(RF==1)
@@ -1353,7 +1349,7 @@ void random_turns()
 				}
 				else if(len_count%2==1)
 				{
-					flag_line=0;correct_turn();len_count=0;lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);//lcd_clear();
+					flag_line=0;correct_turn();correct_for();len_count=0;lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);//lcd_clear();
 				}
 			}
 			else if(LR==1)
@@ -1384,7 +1380,7 @@ void random_turns()
 				
 				else if(len_count%2==1)
 				{
-					flag_line=0;correct_turn();len_count=0;lcd_write_string_xy(15,1,"S");lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);//lcd_clear();
+					flag_line=0;correct_turn();correct_for();len_count=0;lcd_write_string_xy(15,1,"S");lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);//lcd_clear();
 				}
 			}
 		}break;
@@ -1401,7 +1397,7 @@ void random_turns()
 			}
 			else if(flag_F==1)
 			{
-				flag_line=0;correct_turn();len_count=0;lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);//lcd_clear();
+				flag_line=0;correct_turn();correct_for();len_count=0;lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);//lcd_clear();
 			}
 		}break;
 		case 2:
@@ -1591,7 +1587,7 @@ void check_turns()
 				while(bit_is_set(PINA,4))
 				{
 					bot_forward();
-					set_pwm1a(250);//45
+					set_pwm1a(245);
 					set_pwm1b(250);
 				}
 				if(len_6==1)
@@ -1617,7 +1613,7 @@ void check_turns()
 				{
 					bot_forward();
 					set_pwm1a(250);
-					set_pwm1b(250);//45
+					set_pwm1b(245);
 				}
 				if(len_6==1)
 				{
@@ -1653,11 +1649,26 @@ void correct_turn()
 	{
 		while(bit_is_set(PINA,6))
 		{
-			set_pwm1a(400);set_pwm1b(280);
+			set_pwm1a(280);set_pwm1b(280);
 			MOTOR1A=1;
 			MOTOR1B=1;
 			MOTOR2A=1;
 			MOTOR2B=0;
+		}
+	}
+}
+
+void correct_for()
+{
+	if(bit_is_set(PINA,5))
+	{
+		while(bit_is_set(PINA,5))
+		{
+			set_pwm1a(280);set_pwm1b(280);
+			MOTOR1A=1;
+			MOTOR1B=0;
+			MOTOR2A=1;
+			MOTOR2B=1;
 		}
 	}
 }
@@ -1677,13 +1688,13 @@ void left_L()
 	while(bit_is_set(PIND,6))
 	{
 		bot_spot_left();
-		set_pwm1a(300);//300
-		set_pwm1b(300);//300
+		set_pwm1a(300);
+		set_pwm1b(300);
 	}
 	while(bit_is_set(PINA,5))
 	{
-		set_pwm1a(280);//280
-		set_pwm1b(280);//280
+		set_pwm1a(280);
+		set_pwm1b(280);
 	}
 	while(bit_is_set(PINA,6))
 	{
@@ -1717,13 +1728,13 @@ void right_L()
 	while(bit_is_set(PIND,7))
 	{
 		bot_spot_right();
-		set_pwm1a(300);//300
-		set_pwm1b(305);//305
+		set_pwm1a(300);
+		set_pwm1b(305);
 	}
 	while(bit_is_set(PINA,6))
 	{
-		set_pwm1a(280);//280
-		set_pwm1b(285);//285
+		set_pwm1a(280);
+		set_pwm1b(285);//9
 	}
 	while(bit_is_set(PINA,5))
 	{
@@ -1745,7 +1756,6 @@ void right_L()
 
 void D_U_turn()
 {
-	update_map();
 	lcd_write_string_xy(6,1,"D - U");lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);
 	bot_backward();
 	set_pwm1a(400);set_pwm1b(400);
@@ -1970,9 +1980,9 @@ int main(void)
 {
 	init_devices();
 	lcd_write_string_xy(3,0,"D2 - START");lcd_write_string_xy(3,1,"D0 - PATH");
-	//lcd_write_int_xy(1,0,kp,2);
-	//lcd_write_int_xy(5,0,kd*10,2);
-	//lcd_write_int_xy(6,1,opt,3);
+	/*lcd_write_int_xy(1,0,kp,2);
+	lcd_write_int_xy(5,0,kd*10,2);
+	lcd_write_int_xy(6,1,opt,3);*/
 	while(1)
 	{
 		if(pressed_switch2())
@@ -1993,7 +2003,6 @@ int main(void)
 			lcd_clear();
 			_delay_ms(100);
 			read_map();
-			plan_path();
 			flag_END=2;
 			lcd_clear();
 			for(int t=k;t>=0;t--)
@@ -2033,7 +2042,7 @@ int main(void)
 			kp++;
 			lcd_write_int_xy(1,0,kp,2);
 		}
-		/*if(pressed_switch0())
+		if(pressed_switch1())
 		{
 			_delay_ms(150);
 			kd+=0.1;
