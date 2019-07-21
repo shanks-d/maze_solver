@@ -13,8 +13,8 @@ int LR = 0, LF = 0, RF = 0, LFR = 0, LT = 0, Plus = 0, End = 0, flag = 0, flag_L
 long int len_count = 0;
 char dir[4]={'N','E','S','W'}, Dir = 'N';
 
-int i = 0, j = 0,k = 0, len_6 = 0;// len_9 = 0;
-int x_map = 16, y_map = 14, x_end = 0,y_end = 0;//16//14
+int i = 0, j = 0,k = 0, len_6 = 0, len_9 = 0;
+int x_map = 16, y_map = 14, x_end = 0,y_end = 0;
 char map[27][27][2];
 int track[20];
 
@@ -229,10 +229,10 @@ void pass_turns()
 	{
 		k--;
 	}
-	/*else if(len_9==1)
+	else if(len_9==1)
 	{
 		k-=2;
-	}*/
+	}
 	lcd_write_int_xy(0,1,k,2);
 	switch(track[k])
 	{
@@ -285,7 +285,7 @@ void update_map()
 	}
 	else if(len_count>849&&len_count<1850)//849//2100
 	{
-		dir_pass=0;len_6=0;//len_9=0;
+		dir_pass=0;len_6=0;len_9=0;
 		if(flag_END!=2)
 		{
 			if(Dir=='N')
@@ -376,7 +376,7 @@ void update_map()
 	}
 	else if(len_count>1849&&len_count<3050)//2099//3300
 	{
-		dir_pass=0;len_6=1;//len_9=0;
+		dir_pass=0;len_6=1;len_9=0;
 		if(flag_END!=2)
 		{
 			if(Dir=='N')
@@ -537,7 +537,7 @@ void update_map()
 			}
 		}lcd_clear();lcd_write_string_xy(15,0,"6");
 	}
-	/*else if(len_count>3299)
+	else if(len_count>3299)
 	{
 		dir_pass=0;len_9=1;len_6=0;
 		if(flag_END!=2)
@@ -771,7 +771,7 @@ void update_map()
 				y_map-=2;
 			}
 		}lcd_clear();lcd_write_string_xy(15,0,"9");
-	}*/
+	}
 }
 
 void line_track(void)
