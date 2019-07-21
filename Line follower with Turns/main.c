@@ -1,20 +1,19 @@
 #include"sra.c"
 
 int mpos=0,prempos=0;
-unsigned int opt = 270;
-float kp = 13;
-float kd = 1.2;
+unsigned int opt = 290;//270
+float kp = 10;//13
+float kd = 0.00;//1.2
 float pid;
 float p = 0,d = 0;
-int flag_6 = 0, flag_7 = 0, left = 0, right = 0, check = 0, dir_count = 0;
-int Left = 0, Right = 0, Forward = 0, LT = 0, Plus = 0, End = 0;
+int flag_6 = 0, flag_7 = 0, left = 0, right = 0, check = 0, dir_count = 0, start = 0;
+int LR = 0, LF = 0, RF = 0, LFR = 0, LT = 0, Plus = 0, End = 0, flag = 0, flag_L = 0, flag_R = 0, flag_F = 0, flag_END = 0;
 long int len_count = 0;
 char dir[4]={'N','E','S','W'}, Dir = 'N';
-int LSR = 0, RSL = 1, SRL = 0;
 
-int i = 0, j = 0;
-int x_map = 10, y_map = 9;
-char map[11][19];
+int i = 0, j = 0,k = 0;
+int x_map = 18, y_map = 9, x_end = 0, y_end = 0;
+char map[19][19][2];
 
 void update_dir()
 {
@@ -39,140 +38,206 @@ void update_dir()
 
 void start_map()
 {
-	for(i=0; i<11; i++)
+	for(i=0; i<19; i++)
 {
 	for(j=0; j<19; j++)
 	{
-		map[i][j]='z';//0
+		for(k=0; k<2; k++)
+		{
+			map[i][j][k]='\0';//0
+		}
 	}
 }
-map[10][9]='a';//2
+map[18][9][0]='a';//2
 }
 
 void update_map()
 {
-	if(len_count>1000&&len_count<3200)
+	if(len_count>800&&len_count<3200)
 	{
 		if(Dir=='N')
 		{
-			map[x_map-1][y_map]='b';//-1
-			map[x_map-2][y_map]='a';//1
+			map[x_map-1][y_map][0]='(';
+			map[x_map-2][y_map][0]='a';
+			if(map[x_map-1][y_map][1]=='\0')
+			{
+				if(start!=0)
+				{
+					map[x_map-1][y_map][1]='a';
+				}
+				else if(start==0)
+				{
+					map[x_map-1][y_map][1]='b';start=1;
+				}
+			}
+			else if(map[x_map-1][y_map][1]=='a')
+			{
+				map[x_map-1][y_map][1]='b';
+			}
 			x_map-=2;
 		}
 		else if(Dir=='E')
 		{
-			map[x_map][y_map+1]='b';
-			map[x_map][y_map+2]='a';
+			map[x_map][y_map+1][0]='(';
+			map[x_map][y_map+2][0]='a';
+			if(map[x_map][y_map+1][1]=='\0')
+			{
+				map[x_map][y_map+1][1]='a';
+			}
+			else if(map[x_map][y_map+1][1]=='a')
+			{
+				map[x_map][y_map+1][1]='b';
+			}
 			y_map+=2;
 		}
 		else if(Dir=='S')
 		{
-			map[x_map+1][y_map]='b';
-			map[x_map+2][y_map]='a';
+			map[x_map+1][y_map][0]='(';
+			map[x_map+2][y_map][0]='a';
+			if(map[x_map+1][y_map][1]=='\0')
+			{
+				map[x_map+1][y_map][1]='a';
+			}
+			else if(map[x_map+1][y_map][1]=='a')
+			{
+				map[x_map+1][y_map][1]='b';
+			}
 			x_map+=2;
 		}
 		else if(Dir=='W')
 		{
-			map[x_map][y_map-1]='b';
-			map[x_map][y_map-2]='a';
+			map[x_map][y_map-1][0]='(';
+			map[x_map][y_map-2][0]='a';
+			if(map[x_map][y_map-1][1]=='\0')
+			{
+				map[x_map][y_map-1][1]='a';
+			}
+			else if(map[x_map][y_map-1][1]=='a')
+			{
+				map[x_map][y_map-1][1]='b';
+			}
 			y_map-=2;
 		}
 		lcd_clear();lcd_write_string_xy(15,1,"3");
 	}
-	else if(len_count>3700&&len_count<5200)
+	else if(len_count>3200&&len_count<5200)
 	{
 		if(Dir=='N')
 		{
-			map[x_map-1][y_map]='b';
-			map[x_map-2][y_map]='a';
+			map[x_map-1][y_map][0]='(';
+			map[x_map-2][y_map][0]='a';
+			if(map[x_map-1][y_map][1]=='\0')
+			{
+				if(start!=0)
+				{
+					map[x_map-1][y_map][1]='a';
+				}
+				else if(start==0)
+				{
+					map[x_map-1][y_map][1]='b';
+				}
+			}
+			else if(map[x_map-1][y_map][1]=='a')
+			{
+				map[x_map-1][y_map][1]='b';
+			}
 			x_map-=2;
-			map[x_map-1][y_map]='b';
-			map[x_map-2][y_map]='a';
+			map[x_map-1][y_map][0]='(';
+			map[x_map-2][y_map][0]='a';
+			if(map[x_map-1][y_map][1]=='\0')
+			{
+				if(start!=0)
+				{
+					map[x_map-1][y_map][1]='a';
+				}
+				else if(start==0)
+				{
+					map[x_map-1][y_map][1]='b';start=1;
+				}
+			}
+			else if(map[x_map-1][y_map][1]=='a')
+			{
+				map[x_map-1][y_map][1]='b';
+			}
 			x_map-=2;
 		}
 		else if(Dir=='E')
 		{
-			map[x_map][y_map+1]='b';
-			map[x_map][y_map+2]='a';
+			map[x_map][y_map+1][0]='(';
+			map[x_map][y_map+2][0]='a';
+			if(map[x_map][y_map+1][1]=='\0')
+			{
+				map[x_map][y_map+1][1]='a';
+			}
+			else if(map[x_map][y_map+1][1]=='a')
+			{
+				map[x_map][y_map+1][1]='b';
+			}
 			y_map+=2;
-			map[x_map][y_map+1]='b';
-			map[x_map][y_map+2]='a';
+			map[x_map][y_map+1][0]='(';
+			map[x_map][y_map+2][0]='a';
+			if(map[x_map][y_map+1][1]=='\0')
+			{
+				map[x_map][y_map+1][1]='a';
+			}
+			else if(map[x_map][y_map+1][1]=='a')
+			{
+				map[x_map][y_map+1][1]='b';
+			}
 			y_map+=2;
 		}
 		else if(Dir=='S')
 		{
-			map[x_map+1][y_map]='b';
-			map[x_map+2][y_map]='a';
+			map[x_map+1][y_map][0]='(';
+			map[x_map+2][y_map][0]='a';
+			if(map[x_map+1][y_map][1]=='\0')
+			{
+				map[x_map+1][y_map][1]='a';
+			}
+			else if(map[x_map+1][y_map][1]=='a')
+			{
+				map[x_map+1][y_map][1]='b';
+			}
 			x_map+=2;
-			map[x_map+1][y_map]='b';
-			map[x_map+2][y_map]='a';
+			map[x_map+1][y_map][0]='(';
+			map[x_map+2][y_map][0]='a';
+			if(map[x_map+1][y_map][1]=='\0')
+			{
+				map[x_map+1][y_map][1]='a';
+			}
+			else if(map[x_map+1][y_map][1]=='a')
+			{
+				map[x_map+1][y_map][1]='b';
+			}
 			x_map+=2;
 		}
 		else if(Dir=='W')
 		{
-			map[x_map][y_map-1]='b';
-			map[x_map][y_map-2]='a';
+			map[x_map][y_map-1][0]='(';
+			map[x_map][y_map-2][0]='a';
+			if(map[x_map][y_map-1][1]=='\0')
+			{
+				map[x_map][y_map-1][1]='a';
+			}
+			else if(map[x_map][y_map-1][1]=='a')
+			{
+				map[x_map][y_map-1][1]='b';
+			}
 			y_map-=2;
-			map[x_map][y_map-1]='b';
-			map[x_map][y_map-2]='a';
+			map[x_map][y_map-1][0]='(';
+			map[x_map][y_map-2][0]='a';
+			if(map[x_map][y_map-1][1]=='\0')
+			{
+				map[x_map][y_map-1][1]='a';
+			}
+			else if(map[x_map][y_map-1][1]=='a')
+			{
+				map[x_map][y_map-1][1]='b';
+			}
 			y_map-=2;
 		}
 		lcd_clear();lcd_write_string_xy(15,1,"6");
 	}
-	else if(len_count>5700&&len_count<7200)
-	{
-		if(Dir=='N')
-		{
-			map[x_map-1][y_map]='b';
-			map[x_map-2][y_map]='a';
-			x_map-=2;
-			map[x_map-1][y_map]='b';
-			map[x_map-2][y_map]='a';
-			x_map-=2;
-			map[x_map-1][y_map]='b';
-			map[x_map-2][y_map]='a';
-			x_map-=2;
-		}
-		else if(Dir=='E')
-		{
-			map[x_map][y_map+1]='b';
-			map[x_map][y_map+2]='a';
-			y_map+=2;
-			map[x_map][y_map+1]='b';
-			map[x_map][y_map+2]='a';
-			y_map+=2;
-			map[x_map][y_map+1]='b';
-			map[x_map][y_map+2]='a';
-			y_map+=2;
-		}
-		else if(Dir=='S')
-		{
-			map[x_map+1][y_map]='b';
-			map[x_map+2][y_map]='a';
-			x_map+=2;
-			map[x_map+1][y_map]='b';
-			map[x_map+2][y_map]='a';
-			x_map+=2;
-			map[x_map+1][y_map]='b';
-			map[x_map+2][y_map]='a';
-			x_map+=2;
-		}
-		else if(Dir=='W')
-		{
-			map[x_map][y_map-1]='b';
-			map[x_map][y_map-2]='a';
-			y_map-=2;
-			map[x_map][y_map-1]='b';
-			map[x_map][y_map-2]='a';
-			y_map-=2;
-			map[x_map][y_map-1]='b';
-			map[x_map][y_map-2]='a';
-			y_map-=2;
-		}
-		lcd_clear();lcd_write_string_xy(15,1,"9");
-	}
-	lcd_write_int_xy(5,0,x_map,2);lcd_write_int_xy(8,0,y_map,2);
-	lcd_write_int_xy(0,1,Dir,2);
 }
 
 void line_track(void)
@@ -199,7 +264,7 @@ void line_track(void)
 		
 		case 0b0001:mpos = -6; break;
 		
-		case 0b0000:if(bit_is_set(PIND,6)&&bit_is_set(PINA,4)&&bit_is_set(PINA,5)&&bit_is_set(PINA,6)&&bit_is_set(PINA,7)&&bit_is_set(PIND,7)){L_U_turn();} break;
+		case 0b0000:if(bit_is_set(PIND,6)&&bit_is_set(PINA,4)&&bit_is_set(PINA,5)&&bit_is_set(PINA,6)&&bit_is_set(PINA,7)&&bit_is_set(PIND,7)){D_U_turn();} break;
 		
 		default:mpos=0; break;
 	}
@@ -217,42 +282,440 @@ void line_track(void)
 	delay_microsec(10);
 }
 
-void pass_turns()
+void check_random()
 {
-	if(LSR==1)
-	{//LSR
-	if(Left==1)
-	{left=1;}
-	else if(Forward==1)
-	{opt=270;len_count=0;lcd_clear();}
-	else if(Right==1)
-	{right=1;}
-	}
-	
-	else if(RSL==1)
-	{//RSL
-	if(Right==1)
-	{right=1;}
-	else if(Forward==1)
-	{opt=270;len_count=0;lcd_clear();}
-	else if(Left==1)
-	{left=1;}
-	}
-	
-	else if(SRL==1)
-	{//SRL
-	if(Forward==1)
-	{opt=270;len_count=0;lcd_clear();}
-	else if(Right==1)
-	{right=1;}
-	else if(Left==1)
-	{left=1;}
+	switch(Dir)
+	{
+		case 'N':
+		if(LF==1)
+		{
+			if((map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='\0')||(map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='a'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map][y_map-1][1]=='\0'&&map[x_map-1][y_map][1]=='a')||(map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if(map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(RF==1)
+		{
+			if((map[x_map][y_map+1][1]=='a'&&map[x_map-1][y_map][1]=='\0')||(map[x_map][y_map+1][1]=='b'&&map[x_map-1][y_map][1]=='a'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map][y_map+1][1]=='\0'&&map[x_map-1][y_map][1]=='a')||(map[x_map][y_map+1][1]=='a'&&map[x_map-1][y_map][1]=='b'))
+			{
+				flag=1;flag_R=1;
+			}
+			else if(map[x_map][y_map+1][1]=='b'&&map[x_map-1][y_map][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(LR==1)
+		{
+			if((map[x_map][y_map-1][1]=='a'&&map[x_map][y_map+1][1]=='\0')||(map[x_map][y_map-1][1]=='b'&&map[x_map][y_map+1][1]=='a'))
+			{
+				flag=1;flag_R=1;
+			}
+			else if((map[x_map][y_map-1][1]=='\0'&&map[x_map][y_map+1][1]=='a')||(map[x_map][y_map-1][1]=='a'&&map[x_map][y_map+1][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if(map[x_map][y_map-1][1]=='b'&&map[x_map][y_map+1][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(LFR==1)
+		{
+			if((map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='\0'&&map[x_map][y_map+1][1]=='\0')||(map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='a'))
+			{
+				flag=0;LFR=0;RF=1;
+			}
+			else if((map[x_map][y_map-1][1]=='\0'&&map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='\0')||(map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='a'))
+			{
+				flag=0;LFR=0;LR=1;
+			}
+			else if((map[x_map][y_map-1][1]=='\0'&&map[x_map-1][y_map][1]=='\0'&&map[x_map][y_map+1][1]=='a')||(map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='b'))
+			{
+				flag=0;LFR=0;LF=1;
+			}
+			
+			else if((map[x_map][y_map-1][1]=='\0'&&map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='a')||(map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if((map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='\0'&&map[x_map][y_map+1][1]=='a')||(map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='b'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='\0')||(map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='a'))
+			{
+				flag=1;flag_R=1;
+			}
+			
+			else if(map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='b')
+			{
+				flag=2;
+			}
+		}break;
+		
+		case 'E':
+		if(LF==1)
+		{
+			if((map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='\0')||(map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='a'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map-1][y_map][1]=='\0'&&map[x_map][y_map+1][1]=='a')||(map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if(map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(RF==1)
+		{
+			if((map[x_map+1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='\0')||(map[x_map+1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='a'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map+1][y_map][1]=='\0'&&map[x_map][y_map+1][1]=='a')||(map[x_map+1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='b'))
+			{
+				flag=1;flag_R=1;
+			}
+			else if(map[x_map+1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(LR==1)
+		{
+			if((map[x_map-1][y_map][1]=='a'&&map[x_map+1][y_map][1]=='\0')||(map[x_map-1][y_map][1]=='b'&&map[x_map+1][y_map][1]=='a'))
+			{
+				flag=1;flag_R=1;
+			}
+			else if((map[x_map-1][y_map][1]=='\0'&&map[x_map+1][y_map][1]=='a')||(map[x_map-1][y_map][1]=='a'&&map[x_map+1][y_map][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if(map[x_map-1][y_map][1]=='b'&&map[x_map+1][y_map][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(LFR==1)
+		{
+			if((map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='\0'&&map[x_map+1][y_map][1]=='\0')||(map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='a'))
+			{
+				flag=0;LFR=0;RF=1;
+			}
+			else if((map[x_map-1][y_map][1]=='\0'&&map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='\0')||(map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='a'))
+			{
+				flag=0;LFR=0;LR=1;
+			}
+			else if((map[x_map-1][y_map][1]=='\0'&&map[x_map][y_map+1][1]=='\0'&&map[x_map+1][y_map][1]=='a')||(map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='b'))
+			{
+				flag=0;LFR=0;LF=1;
+			}
+			
+			else if((map[x_map-1][y_map][1]=='\0'&&map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='a')||(map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if((map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='\0'&&map[x_map+1][y_map][1]=='a')||(map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='b'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map-1][y_map][1]=='a'&&map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='\0')||(map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='a'))
+			{
+				flag=1;flag_R=1;
+			}
+			
+			else if(map[x_map-1][y_map][1]=='b'&&map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='b')
+			{
+				flag=2;
+			}
+		}break;
+		
+		case 'S':
+		if(LF==1)
+		{
+			if((map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='\0')||(map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='a'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map][y_map+1][1]=='\0'&&map[x_map+1][y_map][1]=='a')||(map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if(map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(RF==1)
+		{
+			if((map[x_map][y_map-1][1]=='a'&&map[x_map+1][y_map][1]=='\0')||(map[x_map][y_map-1][1]=='b'&&map[x_map+1][y_map][1]=='a'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map][y_map-1][1]=='\0'&&map[x_map+1][y_map][1]=='a')||(map[x_map][y_map-1][1]=='a'&&map[x_map+1][y_map][1]=='b'))
+			{
+				flag=1;flag_R=1;
+			}
+			else if(map[x_map][y_map-1][1]=='b'&&map[x_map+1][y_map][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(LR==1)
+		{
+			if((map[x_map][y_map+1][1]=='a'&&map[x_map][y_map-1][1]=='\0')||(map[x_map][y_map+1][1]=='b'&&map[x_map][y_map-1][1]=='a'))
+			{
+				flag=1;flag_R=1;
+			}
+			else if((map[x_map][y_map+1][1]=='\0'&&map[x_map][y_map-1][1]=='a')||(map[x_map][y_map+1][1]=='a'&&map[x_map][y_map-1][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if(map[x_map][y_map+1][1]=='b'&&map[x_map][y_map-1][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(LFR==1)
+		{
+			if((map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='\0'&&map[x_map][y_map-1][1]=='\0')||(map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='a'))
+			{
+				flag=0;LFR=0;RF=1;
+			}
+			else if((map[x_map][y_map+1][1]=='\0'&&map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='\0')||(map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='a'))
+			{
+				flag=0;LFR=0;LR=1;
+			}
+			else if((map[x_map][y_map+1][1]=='\0'&&map[x_map+1][y_map][1]=='\0'&&map[x_map][y_map-1][1]=='a')||(map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='b'))
+			{
+				flag=0;LFR=0;LF=1;
+			}
+			
+			else if((map[x_map][y_map+1][1]=='\0'&&map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='a')||(map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if((map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='\0'&&map[x_map][y_map-1][1]=='a')||(map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='b'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map][y_map+1][1]=='a'&&map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='\0')||(map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='a'))
+			{
+				flag=1;flag_R=1;
+			}
+			
+			else if(map[x_map][y_map+1][1]=='b'&&map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='b')
+			{
+				flag=2;
+			}
+		}break;
+		
+		case 'W':
+		if(LF==1)
+		{
+			if((map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='\0')||(map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='a'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map+1][y_map][1]=='\0'&&map[x_map][y_map-1][1]=='a')||(map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if(map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(RF==1)
+		{
+			if((map[x_map-1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='\0')||(map[x_map-1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='a'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map-1][y_map][1]=='\0'&&map[x_map][y_map-1][1]=='a')||(map[x_map-1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='b'))
+			{
+				flag=1;flag_R=1;
+			}
+			else if(map[x_map-1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(LR==1)
+		{
+			if((map[x_map+1][y_map][1]=='a'&&map[x_map-1][y_map][1]=='\0')||(map[x_map+1][y_map][1]=='b'&&map[x_map-1][y_map][1]=='a'))
+			{
+				flag=1;flag_R=1;
+			}
+			else if((map[x_map+1][y_map][1]=='\0'&&map[x_map-1][y_map][1]=='a')||(map[x_map+1][y_map][1]=='a'&&map[x_map-1][y_map][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if(map[x_map+1][y_map][1]=='b'&&map[x_map-1][y_map][1]=='b')
+			{
+				flag=2;
+			}
+		}
+		else if(LFR==1)
+		{
+			if((map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='\0'&&map[x_map-1][y_map][1]=='\0')||(map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='a'))
+			{
+				flag=0;LFR=0;RF=1;
+			}
+			else if((map[x_map+1][y_map][1]=='\0'&&map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='\0')||(map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='a'))
+			{
+				flag=0;LFR=0;LR=1;
+			}
+			else if((map[x_map+1][y_map][1]=='\0'&&map[x_map][y_map-1][1]=='\0'&&map[x_map-1][y_map][1]=='a')||(map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='b'))
+			{
+				flag=0;LFR=0;LF=1;
+			}
+			
+			else if((map[x_map+1][y_map][1]=='\0'&&map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='a')||(map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='b'))
+			{
+				flag=1;flag_L=1;
+			}
+			else if((map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='\0'&&map[x_map-1][y_map][1]=='a')||(map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='b'))
+			{
+				flag=1;flag_F=1;
+			}
+			else if((map[x_map+1][y_map][1]=='a'&&map[x_map][y_map-1][1]=='a'&&map[x_map-1][y_map][1]=='\0')||(map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='a'))
+			{
+				flag=1;flag_R=1;
+			}
+			
+			else if(map[x_map+1][y_map][1]=='b'&&map[x_map][y_map-1][1]=='b'&&map[x_map-1][y_map][1]=='b')
+			{
+				flag=2;
+			}
+		}break;
+		
+		default:break;
 	}
 }
 
-void mt_order()
+void random_turns()
 {
-	LSR=0;RSL=0;SRL=0;
+	check_random();
+	switch(flag)
+	{
+		case 0:
+		{
+			flag_END=0;
+			if(LF==1)
+			{
+				if(len_count%2==0)
+				{
+					left=1;
+				}
+				else if(len_count%2==1)
+				{
+					opt=290;len_count=0;lcd_clear();
+				}
+			}
+			else if(RF==1)
+			{
+				if(len_count%2==0)
+				{
+					right=1;
+				}
+				else if(len_count%2==1)
+				{
+					opt=290;len_count=0;lcd_clear();
+				}
+			}
+			else if(LR==1)
+			{
+				if(len_count%2==0)
+				{
+					left=1;
+				}
+				else if(len_count%2==1)
+				{
+					right=1;
+				}
+			}
+			else if(LFR==1)
+			{
+				if(len_count%2==0)
+				{
+					if((len_count/2)%2==1)
+					{
+						left=1;
+					}
+				}
+				else if(len_count%2==0)
+				{
+					if((len_count/2)%2==0)
+					{
+						right=1;
+					}
+				}
+				else if(len_count%2==1)
+				{
+					opt=290;len_count=0;lcd_clear();
+				}
+			}
+		}break;
+		case 1:
+		{
+			flag_END=0;
+			if(flag_L==1)
+			{
+				left=1;
+			}
+			else if(flag_R==1)
+			{
+				right=1;
+			}
+			else if(flag_F==1)
+			{
+				opt=290;len_count=0;lcd_clear();
+			}
+		}break;
+		case 2:
+		{
+			flag_END++;
+			if(flag_END==2)
+			{
+				bot_brake();set_pwm1a(400);set_pwm1b(400);lcd_clear();lcd_write_string_xy(6,0,"FUCK");delay_sec(1000);
+			}
+			else if(LF==1)
+			{
+				R_U_turn();
+			}
+			else if(RF==1)
+			{
+				L_U_turn();
+			}
+			else if(LR==1)
+			{
+				T_U_turn();
+			}
+			else if(LFR==1)
+			{
+				P_U_turn();
+			}
+		}break;
+		default:break;
+	}
+	LR = 0; LF = 0; RF = 0; LFR = 0; flag = 0; flag_L = 0; flag_F = 0; flag_R = 0;
 }
 
 void check_turns()
@@ -270,7 +733,7 @@ void check_turns()
 				while(bit_is_clear(PIND,6))
 				{
 					line_track();
-					if(bit_is_clear(PIND,7)){Plus=1;break;}//PLUS condition is HERE
+					if(bit_is_clear(PIND,7)){Plus=1;break;}
 				}
 				if(Plus==1)
 				{
@@ -283,8 +746,7 @@ void check_turns()
 				}
 				if(Plus==0)
 				{
-					Left=1;Forward=1;Right=0;
-					pass_turns();
+					LF=1;random_turns();
 					flag_6=0;
 					if(bit_is_set(PINA,4))
 					{while(bit_is_set(PINA,4))
@@ -294,18 +756,18 @@ void check_turns()
 				}
 				else if(Plus==1)
 				{
-					while(bit_is_set(PINA,4)||bit_is_set(PINA,7))//&&
+					while(bit_is_set(PINA,4)||bit_is_set(PINA,7))
 					{
 						bot_forward();
 						set_pwm1a(245);
 						set_pwm1b(245);
 					}
-					Left=1;Right=1;Forward=1;LT=1;
-					pass_turns();
+					LFR=1;LT=1;
+					random_turns();
 					if(left==1){left_L();}
 					else if(right==1){right_L();}
 				}
-				else if(End==1){lcd_clear();lcd_write_string_xy(4,0,"END ZONE");bot_brake();set_pwm1a(400);set_pwm1b(400);flick();delay_sec(1000);}
+				else if(End!=0){lcd_clear();lcd_write_string_xy(4,0,"END ZONE");bot_brake();set_pwm1a(400);set_pwm1b(400);flick();delay_sec(1);E_U_turn();}
 			}
 			
 			else if(bit_is_set(PIND,6)&&bit_is_clear(PIND,7))
@@ -315,7 +777,7 @@ void check_turns()
 				while(bit_is_clear(PIND,7))
 				{
 					line_track();
-					if(bit_is_clear(PIND,6)){Plus=1;break;}//PLUS condition is HERE
+					if(bit_is_clear(PIND,6)){Plus=1;break;}
 				}
 				if(Plus==1)
 				{
@@ -328,8 +790,8 @@ void check_turns()
 				}
 				if(Plus==0)
 				{
-					Left=0;Forward=1;Right=1;
-					pass_turns();
+					RF=1;
+					random_turns();
 					flag_7=0;
 					if(bit_is_set(PINA,7))
 					{while(bit_is_set(PINA,7))
@@ -345,12 +807,12 @@ void check_turns()
 						set_pwm1a(245);
 						set_pwm1b(245);
 					}
-					Left=1;Right=1;Forward=1;LT=1;
-					pass_turns();
+					LFR=1;LT=1;
+					random_turns();
 					if(left==1){left_L();}
 					else if(right==1){right_L();}
 				}
-				else if(End==1){lcd_clear();lcd_write_string_xy(4,0,"END ZONE");bot_brake();set_pwm1a(400);set_pwm1b(400);flick();delay_sec(1000);}
+				else if(End!=0){lcd_clear();lcd_write_string_xy(4,0,"END ZONE");bot_brake();set_pwm1a(400);set_pwm1b(400);flick();delay_sec(1);E_U_turn();}
 			}
 		}
 		else
@@ -364,8 +826,8 @@ void check_turns()
 					set_pwm1a(245);
 					set_pwm1b(245);
 				}
-				Left=1;Right=1;Forward=0;LT=1;
-				pass_turns();
+				LR=1;LT=1;
+				random_turns();
 				if(left==1){left_L();}
 				else if(right==1){right_L();}
 			}
@@ -441,24 +903,24 @@ void left_L()
 	while(bit_is_set(PIND,6))
 	{
 		bot_spot_left();
-		set_pwm1a(270);//9
-		set_pwm1b(270);//9
+		set_pwm1a(270);
+		set_pwm1b(270);
 	}
 	while(bit_is_set(PINA,5))
 	{
 		set_pwm1a(260);
 		set_pwm1b(260);
 	}
-	while(bit_is_set(PINA,6))//clear
+	while(bit_is_set(PINA,6))
 	{
-		set_pwm1a(250);//6
-		set_pwm1b(250);//6
+		set_pwm1a(260);//5
+		set_pwm1b(260);//5
 	}
 	bot_brake();
 	set_pwm1a(400);
 	set_pwm1b(400);
 	_delay_ms(150);
-	left=0;check=0;opt=270;flag_6=0;flag_7=0,Left=0,Forward=0,Right=0;LT=0;Plus=0;len_count=0;dir_count--;
+	left=0;check=0;opt=290;flag_6=0;flag_7=0,LT=0;Plus=0;len_count=0;dir_count--;
 	update_dir();
 }
 
@@ -480,30 +942,30 @@ void right_L()
 		set_pwm1a(270);
 		set_pwm1b(275);
 	}
-	while(bit_is_set(PINA,6))//5
+	while(bit_is_set(PINA,6))
 	{
 		set_pwm1a(260);
 		set_pwm1b(270);
 	}
-	while(bit_is_set(PINA,5))//clear6
+	while(bit_is_set(PINA,5))
 	{
-		set_pwm1a(255);//5
-		set_pwm1b(260);//55
+		set_pwm1a(260);//55
+		set_pwm1b(265);//60
 	}
 	bot_brake();
 	set_pwm1a(400);
 	set_pwm1b(400);
 	_delay_ms(150);
-	right=0;check=0;opt=270;flag_6=0;flag_7=0,Left=0,Forward=0,Right=0;LT=0;Plus=0;len_count=0;dir_count++;
+	right=0;check=0;opt=290;flag_6=0;flag_7=0,LT=0;Plus=0;len_count=0;dir_count++;
 	update_dir();
 }
 
-void L_U_turn()
+void D_U_turn()
 {
 	update_map();
 	bot_backward();
 	set_pwm1a(400);set_pwm1b(400);
-	while(bit_is_set(PIND,6))//setA4
+	while(bit_is_set(PIND,6))
 	{
 		bot_spot_left();
 		set_pwm1a(320);
@@ -526,6 +988,173 @@ void L_U_turn()
 	update_dir();
 }
 
+void L_U_turn()
+{
+	bot_backward();
+	set_pwm1a(400);set_pwm1b(400);
+	while(bit_is_set(PIND,6))
+	{
+		bot_spot_left();
+		set_pwm1a(320);
+		set_pwm1b(310);
+	}
+	while(bit_is_set(PINA,5))
+	{
+		set_pwm1a(270);
+		set_pwm1b(260);
+	}
+	while(bit_is_set(PINA,6))
+	{
+		set_pwm1a(260);
+		set_pwm1b(250);
+	}
+	bot_spot_right();
+	set_pwm1a(400);
+	set_pwm1b(400);
+	check=0;opt=290;len_count=0;dir_count-=2;
+	update_dir();
+}
+
+void R_U_turn()
+{
+	bot_backward();
+	set_pwm1a(400);set_pwm1b(400);
+	while(bit_is_set(PIND,7))
+	{
+		bot_spot_left();
+		set_pwm1a(320);
+		set_pwm1b(310);
+	}
+	while(bit_is_set(PINA,6))
+	{
+		set_pwm1a(320);
+		set_pwm1b(310);
+	}
+	while(bit_is_set(PIND,6))
+	{
+		set_pwm1a(320);
+		set_pwm1b(310);
+	}
+	while(bit_is_set(PINA,5))
+	{
+		set_pwm1a(270);
+		set_pwm1b(260);
+	}
+	while(bit_is_set(PINA,6))
+	{
+		set_pwm1a(260);
+		set_pwm1b(250);
+	}
+	bot_spot_right();
+	set_pwm1a(400);
+	set_pwm1b(400);
+	check=0;opt=290;len_count=0;dir_count-=2;
+	update_dir();
+}
+
+void T_U_turn()
+{
+	bot_backward();
+	set_pwm1a(400);set_pwm1b(400);
+	while(bit_is_set(PINA,5))
+	{
+		bot_spot_left();
+		set_pwm1a(320);
+		set_pwm1b(310);
+	}
+	while(bit_is_set(PIND,6))
+	{
+		set_pwm1a(310);
+		set_pwm1b(300);
+	}
+	while(bit_is_set(PINA,5))
+	{
+		set_pwm1a(270);
+		set_pwm1b(260);
+	}
+	while(bit_is_set(PINA,6))
+	{
+		set_pwm1a(260);
+		set_pwm1b(250);
+	}
+	bot_spot_right();
+	set_pwm1a(400);
+	set_pwm1b(400);
+	check=0;opt=290;len_count=0;dir_count-=2;
+	update_dir();
+}
+
+void E_U_turn()
+{
+	x_end=x_map;y_end=y_map;
+	bot_backward();
+	set_pwm1a(400);set_pwm1b(400);
+	while(bit_is_clear(PINA,5))
+	{
+		bot_spot_left();
+		set_pwm1a(320);
+		set_pwm1b(310);
+	}
+	while(bit_is_set(PIND,6))
+	{
+		set_pwm1a(320);
+		set_pwm1b(310);
+	}
+	while(bit_is_set(PINA,5))
+	{
+		set_pwm1a(270);
+		set_pwm1b(260);
+	}
+	while(bit_is_set(PINA,6))
+	{
+		set_pwm1a(260);
+		set_pwm1b(250);
+	}
+	bot_spot_right();
+	set_pwm1a(400);
+	set_pwm1b(400);
+	check=0;opt=290;len_count=0;dir_count-=2;
+	update_dir();
+	update_dir();
+}
+
+void P_U_turn()
+{
+	bot_backward();
+	set_pwm1a(400);set_pwm1b(400);
+	while(bit_is_set(PIND,7))
+	{
+		bot_spot_left();
+		set_pwm1a(320);
+		set_pwm1b(310);
+	}
+	while(bit_is_set(PIND,6))
+	{
+		set_pwm1a(310);
+		set_pwm1b(300);
+	}
+	while(bit_is_set(PIND,5))
+	{
+		set_pwm1a(310);
+		set_pwm1b(300);
+	}
+	while(bit_is_set(PINA,5))
+	{
+		set_pwm1a(270);
+		set_pwm1b(260);
+	}
+	while(bit_is_set(PINA,6))
+	{
+		set_pwm1a(260);
+		set_pwm1b(250);
+	}
+	bot_spot_right();
+	set_pwm1a(400);
+	set_pwm1b(400);
+	check=0;opt=290;len_count=0;dir_count-=2;
+	update_dir();
+}
+
 void init_devices(void)
 {
 	port_init();
@@ -540,6 +1169,8 @@ void init_devices(void)
 int main(void)
 {
 	init_devices();
+	lcd_write_int_xy(2,0,kp,2);
+	lcd_write_int_xy(7,0,kd*100,2);
 
 	while(1)
 	{		
@@ -556,6 +1187,20 @@ int main(void)
 				LED|=sensorbyte;
 			}
 		}
+		if(pressed_switch0())
+		{
+			kp++;
+			lcd_write_int_xy(2,0,kp,2);
+			_delay_ms(150);
+		}
+		
+		if(pressed_switch1())
+		{
+			kd+=0.01;
+			lcd_write_int_xy(12,0,kd*100,2);
+			_delay_ms(150);
+		}
+		
 	}
 	return 0;
 }
